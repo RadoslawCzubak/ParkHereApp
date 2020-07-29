@@ -10,6 +10,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -20,15 +22,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.rczubak.parkhereapp.R
+import com.rczubak.parkhereapp.vmFactory.ViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.java.simpleName
-    private var locationPermission = false
+    private lateinit var viewModel: MainViewModel
     private var map: GoogleMap? = null
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private var lastUserLocation: Location? = null
     private val markers = ArrayList<Marker>()
 
     companion object {
@@ -38,10 +39,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setUtils()
+        setupViewModel()
         getLocationPermission()
         getMap()
         setListeners()
+        setObservers()
     }
 
     override fun onRequestPermissionsResult(
@@ -53,8 +55,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             FINE_LOCATION_PERMISSION_REQUEST -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    locationPermission = true
-                    updateMapUI()
+                    viewModel.locationPermissionGranted()
                     Toast.makeText(applicationContext, "Permission granted!", Toast.LENGTH_SHORT)
                         .show()
                 } else {
@@ -72,20 +73,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun setUtils(){
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+    private fun setupViewModel() {
+        val factory =
+            ViewModelFactory(LocationServices.getFusedLocationProviderClient(applicationContext))
+        viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
     }
 
-    fun getLocationPermission() {
+    private fun setObservers() {
+        viewModel.parkLocation.observe(this, Observer {location ->
+            updateParkingMarker(location)
+        })
+
+        viewModel.lastUserLocation.observe(this, Observer {location ->
+            updateMapView(location)
+            updateMapUI(true)
+        })
+
+        viewModel.locationPermission.observe(this, Observer {
+            if (it){
+                setMapUI()
+            }
+
+            updateMapUI(it)
+        })
+    }
+
+    private fun getLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            locationPermission = true
-        }
-
-        else {
+            viewModel.locationPermissionGranted()
+            getUserLocation()
+        } else {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -99,78 +120,71 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync {
             map = it
-            setMapUI()
-            updateMapUI()
         }
     }
 
-    private fun setMapUI(){
+    private fun setMapUI() {
         map?.uiSettings?.isCompassEnabled = true
     }
 
 
     @SuppressLint("MissingPermission")
-    private fun updateMapUI() {
+    private fun updateMapUI(isLocationAllowed: Boolean) {
 
         if (map == null) return
 
-        if (locationPermission) {
+        if (isLocationAllowed){
             map?.isMyLocationEnabled = true
             map?.uiSettings?.isMyLocationButtonEnabled = true
-        }
-        else{
+        } else {
             map?.isMyLocationEnabled = false
             map?.uiSettings?.isMyLocationButtonEnabled = false
         }
     }
 
-    private fun getUserLocation(){
-        try {
-            if(locationPermission){
-                val locationResult = fusedLocationProviderClient.lastLocation
-                    .addOnSuccessListener {location ->
-                        lastUserLocation = location
-                        updateMapView()
-                    } }
-            else{
-                lastUserLocation = null
-                getLocationPermission()
-                getUserLocation()
-            }
-            } catch (e: SecurityException){
-            Log.d(TAG, "ERROR OCCURED", e)
-        }
+    private fun getUserLocation() {
+        viewModel.getUserLocation()
     }
 
-    private fun updateMapView(){
+    private fun updateMapView(lastUserLocation: Location?) {
         if (lastUserLocation != null) {
-            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lastUserLocation!!.latitude, lastUserLocation!!.longitude), 13f))
+            map?.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(
+                        lastUserLocation.latitude,
+                        lastUserLocation.longitude
+                    ), 13f
+                )
+            )
         }
     }
 
-    private fun parkHere(){
-        if (lastUserLocation != null){
+    private fun updateParkingMarker(parkLocation: Location?) {
+        if (parkLocation != null) {
             val marker = map?.addMarker(
-                MarkerOptions().position(LatLng(lastUserLocation!!.latitude, lastUserLocation!!.longitude)).title("Parked Here!")
+                MarkerOptions().position(
+                    LatLng(
+                        parkLocation!!.latitude,
+                        parkLocation!!.longitude
+                    )
+                ).title("Parked Here!")
             )
-            if (marker != null){
+            if (marker != null) {
                 markers.add(marker)
             }
         }
-
     }
 
-    private fun setListeners(){
-        button_park.setOnClickListener{
+    private fun setListeners() {
+        button_park.setOnClickListener {
             getUserLocation()
-            parkHere()
+            viewModel.parkHere()
         }
 
         button_remove.setOnClickListener {
-            for (marker in markers){
+            for (marker in markers) {
                 marker.remove()
             }
         }
     }
-
 }
