@@ -180,6 +180,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun removeMarker(){
-        marker!!.remove()
+        if(marker != null) marker!!.remove()
     }
 }

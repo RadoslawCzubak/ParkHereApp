@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.rczubak.parkhereapp.main.MainViewModel" />
     </data>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -25,21 +26,24 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center">
 
-            <Button
+            <include
                 android:id="@+id/button_park"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="@{() -> viewModel.parkHere()}"
-                android:text="Park Here" />
+                layout="@layout/button_rounded_titled"
+                app:background="@{@drawable/button_circle}"
+                app:icon="@{@drawable/ic_baseline_local_parking_24}"
+                app:listener="@{(view) -> viewModel.parkHere()}"
+                app:title="@{@string/park_btn_title}" />
 
-            <Button
+            <include
                 android:id="@+id/button_remove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="@{() -> viewModel.endParking()}"
-                android:text="Remove Marker" />
+                layout="@layout/button_rounded_titled"
+                app:background="@{@drawable/button_circle}"
+                app:icon="@{@drawable/ic_baseline_directions_car_24}"
+                app:listener="@{(view) -> viewModel.endParking()}"
+                app:title="@{@string/remove_btn_title}" />
         </LinearLayout>
     </LinearLayout>
 </layout>
