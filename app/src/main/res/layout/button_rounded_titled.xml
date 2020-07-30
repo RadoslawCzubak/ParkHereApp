@@ -16,6 +16,9 @@
         <variable
             name="listener"
             type="android.view.View.OnClickListener" />
+        <variable
+            name="enabled"
+            type="Boolean" />
     </data>
 
     <LinearLayout
@@ -31,10 +34,11 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:src="@{icon}"
-            android:background="@{background}"
+            android:background="@{enabled ? background : @drawable/button_inactive }"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
+            android:clickable="@{enabled}"
             tools:layout_height="60dp"
             tools:layout_width="60dp"
             android:onClick="@{(view)->listener.onClick(view)}"

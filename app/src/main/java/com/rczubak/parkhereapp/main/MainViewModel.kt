@@ -16,7 +16,7 @@ class MainViewModel(val locationProviderClient: FusedLocationProviderClient) : V
     private val _lastUserLocation = MutableLiveData<Location>()
     val lastUserLocation: LiveData<Location> = _lastUserLocation
 
-    private val _parkLocation = MutableLiveData<Location>()
+    private val _parkLocation = MutableLiveData<Location>(null)
     val parkLocation: LiveData<Location?> = _parkLocation
 
     @SuppressLint("MissingPermission")

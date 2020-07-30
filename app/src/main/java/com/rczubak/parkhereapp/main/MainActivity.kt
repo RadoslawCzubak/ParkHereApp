@@ -39,9 +39,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setupViewModel()
+        setObservers()
         getLocationPermission()
         getMap()
-        setObservers()
     }
 
     override fun onRequestPermissionsResult(
@@ -82,8 +82,12 @@ class MainActivity : AppCompatActivity() {
         viewModel.parkLocation.observe(this, Observer {location ->
             if (location == null){
                 removeMarker()
+                binding.buttonPark.enabled = true
+                binding.buttonRemove.enabled = false
             } else{
                 updateParkingMarker(location)
+                binding.buttonPark.enabled = false
+                binding.buttonRemove.enabled = true
             }
 
         })
