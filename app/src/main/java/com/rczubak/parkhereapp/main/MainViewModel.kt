@@ -40,6 +40,7 @@ class MainViewModel(val locationProviderClient: FusedLocationProviderClient) : V
     fun parkHere(){
         getUserLocation()
         Log.d("clicked", "clicked")
+        if(_parkLocation.value == null)
         _parkLocation.value = lastUserLocation.value
     }
 
