@@ -39,11 +39,14 @@
             android:layout_marginEnd="20dp"
             android:layout_marginStart="20dp"
             android:clickable="@{enabled}"
+            android:tint="#FFF"
+            android:scaleType="fitCenter"
+            android:padding="15dp"
             tools:layout_height="60dp"
             tools:layout_width="60dp"
             android:onClick="@{(view)->listener.onClick(view)}"
             tools:background="@drawable/button_circle"
-            tools:src="@drawable/ic_baseline_local_parking_24"/>
+            tools:src="@drawable/ic_park"/>
 
         <TextView
             android:layout_width="wrap_content"

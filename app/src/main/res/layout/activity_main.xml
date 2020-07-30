@@ -33,7 +33,7 @@
                 android:id="@+id/button_park"
                 layout="@layout/button_rounded_titled"
                 app:background="@{@drawable/button_circle}"
-                app:icon="@{@drawable/ic_baseline_local_parking_24}"
+                app:icon="@{@drawable/ic_park}"
                 app:listener="@{(view) -> viewModel.parkHere()}"
                 app:title="@{@string/park_btn_title}" />
 
