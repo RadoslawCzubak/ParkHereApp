@@ -3,12 +3,14 @@ package com.rczubak.parkhereapp.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -16,9 +18,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.rczubak.parkhereapp.R
 import com.rczubak.parkhereapp.databinding.ActivityMainBinding
 import com.rczubak.parkhereapp.vmFactory.ViewModelFactory
@@ -79,12 +79,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setObservers() {
-        viewModel.parkLocation.observe(this, Observer {location ->
-            if (location == null){
+        viewModel.parkLocation.observe(this, Observer { location ->
+            if (location == null) {
                 removeMarker()
                 binding.buttonPark.enabled = true
                 binding.buttonRemove.enabled = false
-            } else{
+            } else {
                 updateParkingMarker(location)
                 binding.buttonPark.enabled = false
                 binding.buttonRemove.enabled = true
@@ -92,13 +92,13 @@ class MainActivity : AppCompatActivity() {
 
         })
 
-        viewModel.lastUserLocation.observe(this, Observer {location ->
+        viewModel.lastUserLocation.observe(this, Observer { location ->
             updateMapView(location)
             updateMapUI(true)
         })
 
         viewModel.locationPermission.observe(this, Observer {
-            if (it){
+            if (it) {
                 setMapUI()
             }
 
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 
         if (map == null) return
 
-        if (isLocationAllowed){
+        if (isLocationAllowed) {
             map?.isMyLocationEnabled = true
             map?.uiSettings?.isMyLocationButtonEnabled = true
         } else {
@@ -176,14 +176,16 @@ class MainActivity : AppCompatActivity() {
                         parkLocation.longitude
                     )
                 ).title("Parked Here!")
+                    .icon(BitmapDescriptorFactory.defaultMarker(215f))
             )
+
             if (marker != null) {
                 this.marker = marker
             }
         }
     }
 
-    private fun removeMarker(){
-        if(marker != null) marker!!.remove()
+    private fun removeMarker() {
+        if (marker != null) marker!!.remove()
     }
 }
