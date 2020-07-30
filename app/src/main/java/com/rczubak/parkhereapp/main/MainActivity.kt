@@ -6,31 +6,30 @@ import android.content.pm.PackageManager
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.rczubak.parkhereapp.R
+import com.rczubak.parkhereapp.databinding.ActivityMainBinding
 import com.rczubak.parkhereapp.vmFactory.ViewModelFactory
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.java.simpleName
+    private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
     private var map: GoogleMap? = null
-    private val markers = ArrayList<Marker>()
+    private var marker: Marker? = null
 
     companion object {
         const val FINE_LOCATION_PERMISSION_REQUEST = 101
@@ -38,11 +37,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setupViewModel()
         getLocationPermission()
         getMap()
-        setListeners()
         setObservers()
     }
 
@@ -77,11 +75,17 @@ class MainActivity : AppCompatActivity() {
         val factory =
             ViewModelFactory(LocationServices.getFusedLocationProviderClient(applicationContext))
         viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
+        binding.viewModel = viewModel
     }
 
     private fun setObservers() {
         viewModel.parkLocation.observe(this, Observer {location ->
-            updateParkingMarker(location)
+            if (location == null){
+                removeMarker()
+            } else{
+                updateParkingMarker(location)
+            }
+
         })
 
         viewModel.lastUserLocation.observe(this, Observer {location ->
@@ -164,27 +168,18 @@ class MainActivity : AppCompatActivity() {
             val marker = map?.addMarker(
                 MarkerOptions().position(
                     LatLng(
-                        parkLocation!!.latitude,
-                        parkLocation!!.longitude
+                        parkLocation.latitude,
+                        parkLocation.longitude
                     )
                 ).title("Parked Here!")
             )
             if (marker != null) {
-                markers.add(marker)
+                this.marker = marker
             }
         }
     }
 
-    private fun setListeners() {
-        button_park.setOnClickListener {
-            getUserLocation()
-            viewModel.parkHere()
-        }
-
-        button_remove.setOnClickListener {
-            for (marker in markers) {
-                marker.remove()
-            }
-        }
+    private fun removeMarker(){
+        marker!!.remove()
     }
 }

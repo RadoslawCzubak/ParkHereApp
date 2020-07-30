@@ -38,7 +38,12 @@ class MainViewModel(val locationProviderClient: FusedLocationProviderClient) : V
     }
 
     fun parkHere(){
+        getUserLocation()
         _parkLocation.value = lastUserLocation.value
+    }
+
+    fun endParking(){
+        _parkLocation.value = null
     }
 
     fun locationPermissionGranted(){
