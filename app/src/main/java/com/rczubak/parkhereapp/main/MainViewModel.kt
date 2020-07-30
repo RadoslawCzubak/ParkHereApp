@@ -38,7 +38,7 @@ class MainViewModel(val locationProviderClient: FusedLocationProviderClient) : V
     }
 
 
-    fun getUserLocationAndPark(){
+    private fun getUserLocationAndPark(){
         try {
             if (locationPermission.value!!) {
                 locationProviderClient.lastLocation
