@@ -37,10 +37,28 @@ class MainViewModel(val locationProviderClient: FusedLocationProviderClient) : V
         }
     }
 
+
+    fun getUserLocationAndPark(){
+        try {
+            if (locationPermission.value!!) {
+                locationProviderClient.lastLocation
+                    .addOnSuccessListener { location ->
+                        _lastUserLocation.value = location
+                        if(_parkLocation.value == null)
+                            _parkLocation.value = lastUserLocation.value
+                    }
+            } else {
+                _lastUserLocation.value = null
+                _locationPermission.value = false
+
+            }
+        } catch (e: SecurityException){
+            Log.e("", "Location error occured", e)
+        }
+    }
+
     fun parkHere(){
-        getUserLocation()
-        if(_parkLocation.value == null)
-        _parkLocation.value = lastUserLocation.value
+        getUserLocationAndPark()
     }
 
     fun endParking(){
