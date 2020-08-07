@@ -1,4 +1,4 @@
-package com.rczubak.parkhereapp.main
+package com.rczubak.parkhereapp.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -18,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.rczubak.parkhereapp.R
+import com.rczubak.parkhereapp.data.SharedPreferencesDAO
 import com.rczubak.parkhereapp.databinding.ActivityMainBinding
 import com.rczubak.parkhereapp.vmFactory.ViewModelFactory
 
@@ -26,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
+    private lateinit var sharedPreferencesDAO: SharedPreferencesDAO
     private var map: GoogleMap? = null
     private var marker: Marker? = null
 
@@ -36,9 +39,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        setupViewModel()
-        setObservers()
-        getLocationPermission()
         getMap()
     }
 
@@ -70,8 +70,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupViewModel() {
+        sharedPreferencesDAO = SharedPreferencesDAO(application)
         val factory =
-            ViewModelFactory(LocationServices.getFusedLocationProviderClient(applicationContext))
+            ViewModelFactory(
+                LocationServices.getFusedLocationProviderClient(applicationContext),
+                sharedPreferencesDAO
+            )
         viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
         binding.viewModel = viewModel
     }
@@ -83,9 +87,9 @@ class MainActivity : AppCompatActivity() {
                 binding.buttonPark.enabled = true
                 binding.buttonRemove.enabled = false
             } else {
-                updateParkingMarker(location)
                 binding.buttonPark.enabled = false
                 binding.buttonRemove.enabled = true
+                updateParkingMarker(location)
             }
 
         })
@@ -124,8 +128,11 @@ class MainActivity : AppCompatActivity() {
     private fun getMap() {
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        mapFragment.getMapAsync {
-            map = it
+        mapFragment.getMapAsync{
+            map=it
+            setupViewModel()
+            setObservers()
+            getLocationPermission()
         }
     }
 
@@ -152,38 +159,33 @@ class MainActivity : AppCompatActivity() {
         viewModel.getUserLocation()
     }
 
-    private fun updateMapView(lastUserLocation: Location?) {
+    private fun updateMapView(lastUserLocation: LatLng?) {
         if (lastUserLocation != null) {
             map?.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        lastUserLocation.latitude,
-                        lastUserLocation.longitude
-                    ), 13f
+                    lastUserLocation, 13f
                 )
             )
         }
     }
 
-    private fun updateParkingMarker(parkLocation: Location?) {
-        if (parkLocation != null) {
+    private fun updateParkingMarker(parkLocation: LatLng?) {
+        if (marker == null && parkLocation != null) {
             val marker = map?.addMarker(
                 MarkerOptions().position(
-                    LatLng(
-                        parkLocation.latitude,
-                        parkLocation.longitude
-                    )
+                    parkLocation
                 ).title("Parked Here!")
                     .icon(BitmapDescriptorFactory.defaultMarker(215f))
             )
-
-            if (marker != null) {
-                this.marker = marker
-            }
+            this.marker = marker
+        } else if (marker != null && parkLocation != null) {
+            removeMarker()
+            updateParkingMarker(parkLocation)
         }
     }
 
     private fun removeMarker() {
         if (marker != null) marker!!.remove()
+        marker = null
     }
 }
