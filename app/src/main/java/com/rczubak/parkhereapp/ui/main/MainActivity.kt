@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -47,10 +48,12 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             FINE_LOCATION_PERMISSION_REQUEST -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.i(TAG, "Location permission granted.")
                     viewModel.locationPermissionGranted()
                     Toast.makeText(applicationContext, "Permission granted!", Toast.LENGTH_SHORT)
                         .show()
                 } else {
+                    Log.i(TAG, "Location permission denied.")
                     Toast.makeText(
                         applicationContext,
                         "Permission denied, we need them to localize your park place!",
@@ -99,14 +102,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getLocationPermission() {
+        Log.i(TAG, "Checking location permission.")
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            Log.i(TAG, "Location permission already granted.")
             viewModel.locationPermissionGranted()
             getUserLocation()
         } else {
+            Log.i(TAG, "Trying to get location permission.")
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -116,9 +122,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getMap() {
+        Log.i(TAG, "Getting Google maps.")
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync{
+            Log.i(TAG, "Maps get.")
             map=it
             setupViewModel()
             setObservers()
@@ -146,6 +154,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getUserLocation() {
+        Log.i(TAG, "Getting user's location")
         viewModel.getUserLocation()
     }
 
