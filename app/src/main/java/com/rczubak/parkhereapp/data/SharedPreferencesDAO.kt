@@ -8,8 +8,8 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.rczubak.parkhereapp.R
 
-class SharedPreferencesDAO(application: Application) {
-    private val sharedPrefs = application.getSharedPreferences(application.applicationContext.getString(R.string.application_sharedprefs_key), Context.MODE_PRIVATE)
+class SharedPreferencesDAO(context: Context) {
+    private val sharedPrefs = context.getSharedPreferences(context.getString(R.string.application_sharedprefs_key), Context.MODE_PRIVATE)
 
     fun getLocationData(key: String): LatLng? {
         val gson = GsonBuilder().create()

@@ -3,10 +3,8 @@ package com.rczubak.parkhereapp.ui.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -22,12 +20,13 @@ import com.rczubak.parkhereapp.R
 import com.rczubak.parkhereapp.data.SharedPreferencesDAO
 import com.rczubak.parkhereapp.databinding.ActivityMainBinding
 import com.rczubak.parkhereapp.vmFactory.ViewModelFactory
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var binding: ActivityMainBinding
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModel()
     private lateinit var sharedPreferencesDAO: SharedPreferencesDAO
     private var map: GoogleMap? = null
     private var marker: Marker? = null
@@ -71,12 +70,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupViewModel() {
         sharedPreferencesDAO = SharedPreferencesDAO(application)
-        val factory =
-            ViewModelFactory(
-                LocationServices.getFusedLocationProviderClient(applicationContext),
-                sharedPreferencesDAO
-            )
-        viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
         binding.viewModel = viewModel
     }
 
