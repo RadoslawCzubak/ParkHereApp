@@ -9,10 +9,11 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.rczubak.parkhereapp.data.SharedPreferencesDAO
+import com.rczubak.parkhereapp.utils.PARK_LOCATION_KEY
 
 class MainViewModel(
-    val locationProviderClient: FusedLocationProviderClient,
-    val sharedPreferencesDAO: SharedPreferencesDAO
+    private val locationProviderClient: FusedLocationProviderClient,
+    private val sharedPreferencesDAO: SharedPreferencesDAO
 ) : ViewModel() {
 
     private val _locationPermission = MutableLiveData<Boolean>(false)
@@ -25,7 +26,7 @@ class MainViewModel(
     val parkLocation: LiveData<LatLng?> = _parkLocation
 
     init {
-        val savedParkLocation = sharedPreferencesDAO.getLocationData("parkLocation")
+        val savedParkLocation = sharedPreferencesDAO.getLocationData(PARK_LOCATION_KEY)
         _parkLocation.value = savedParkLocation
     }
 
@@ -35,7 +36,7 @@ class MainViewModel(
             if (locationPermission.value!!) {
                 locationProviderClient.lastLocation
                     .addOnSuccessListener { location ->
-                        _lastUserLocation.value = LatLng(location.latitude, location.longitude)
+                        _lastUserLocation.value = locationToLatLng(location)
                     }
             } else {
                 _lastUserLocation.value = null
@@ -53,15 +54,16 @@ class MainViewModel(
             if (locationPermission.value!!) {
                 locationProviderClient.lastLocation
                     .addOnSuccessListener { location ->
-                        _lastUserLocation.value = LatLng(location.latitude, location.longitude)
+
+                        _lastUserLocation.value = locationToLatLng(location)
                         if (_parkLocation.value == null) {
                             _parkLocation.value = lastUserLocation.value
 
-                            if(_parkLocation.value != null)
-                            sharedPreferencesDAO.saveLocationData(
-                                "parkLocation",
-                                _parkLocation.value!!
-                            )
+                            if (_parkLocation.value != null)
+                                sharedPreferencesDAO.saveLocationData(
+                                    PARK_LOCATION_KEY,
+                                    _parkLocation.value!!
+                                )
                         }
                     }
             } else {
@@ -80,11 +82,19 @@ class MainViewModel(
 
     fun endParking() {
         _parkLocation.value = null
-        sharedPreferencesDAO.deleteLocationData("parkLocation")
+        sharedPreferencesDAO.deleteLocationData(PARK_LOCATION_KEY)
     }
 
     fun locationPermissionGranted() {
         _locationPermission.value = true
+    }
+
+    private fun locationToLatLng(location: Location?): LatLng? {
+        return if (location != null) {
+            LatLng(location.latitude, location.longitude)
+        } else {
+            null
+        }
     }
 
 }
