@@ -24,26 +24,41 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <LinearLayout
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center">
+            android:scrollbarAlwaysDrawHorizontalTrack="true">
 
-            <include
-                android:id="@+id/button_park"
-                layout="@layout/button_rounded_titled"
-                app:background="@{@drawable/button_circle}"
-                app:icon="@{@drawable/ic_park}"
-                app:listener="@{(view) -> viewModel.parkHere()}"
-                app:title="@{@string/park_btn_title}" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center">
 
-            <include
-                android:id="@+id/button_remove"
-                layout="@layout/button_rounded_titled"
-                app:background="@{@drawable/button_circle}"
-                app:icon="@{@drawable/ic_baseline_directions_car_24}"
-                app:listener="@{(view) -> viewModel.endParking()}"
-                app:title="@{@string/remove_btn_title}" />
-        </LinearLayout>
+                <include
+                    android:id="@+id/button_lead"
+                    layout="@layout/button_rounded_titled"
+                    app:background="@{@drawable/button_circle}"
+                    app:icon="@{@drawable/ic_compass}"
+                    app:listener="@{(view) -> viewModel.leadToParkLocation()}"
+                    app:title="@{@string/lead_btn_title}" />
+
+                <include
+                    android:id="@+id/button_park"
+                    layout="@layout/button_rounded_titled"
+                    app:background="@{@drawable/button_circle}"
+                    app:icon="@{@drawable/ic_park}"
+                    app:listener="@{(view) -> viewModel.parkHere()}"
+                    app:title="@{@string/park_btn_title}" />
+
+                <include
+                    android:id="@+id/button_remove"
+                    layout="@layout/button_rounded_titled"
+                    app:background="@{@drawable/button_circle}"
+                    app:icon="@{@drawable/ic_baseline_directions_car_24}"
+                    app:listener="@{(view) -> viewModel.endParking()}"
+                    app:title="@{@string/remove_btn_title}" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
     </LinearLayout>
 </layout>

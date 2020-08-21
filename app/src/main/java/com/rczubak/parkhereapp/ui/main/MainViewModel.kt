@@ -2,6 +2,7 @@ package com.rczubak.parkhereapp.ui.main
 
 import android.annotation.SuppressLint
 import android.location.Location
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,6 +25,9 @@ class MainViewModel(
 
     private val _parkLocation = MutableLiveData<LatLng>(null)
     val parkLocation: LiveData<LatLng?> = _parkLocation
+
+    private val _mapUri = MutableLiveData<Uri>()
+    val mapUri: LiveData<Uri> = _mapUri
 
     init {
         val savedParkLocation = sharedPreferencesDAO.getLocationData(PARK_LOCATION_KEY)
@@ -87,6 +91,13 @@ class MainViewModel(
 
     fun locationPermissionGranted() {
         _locationPermission.value = true
+    }
+
+    fun leadToParkLocation() {
+        val coords = parkLocation.value
+        if (coords != null)
+            _mapUri.value =
+                Uri.parse("google.navigation:q=${coords!!.latitude},${coords!!.longitude}")
     }
 
     private fun locationToLatLng(location: Location?): LatLng? {

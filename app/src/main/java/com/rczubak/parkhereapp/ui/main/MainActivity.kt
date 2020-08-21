@@ -2,7 +2,9 @@ package com.rczubak.parkhereapp.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -82,6 +84,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 binding.buttonPark.enabled = false
                 binding.buttonRemove.enabled = true
+                binding.buttonLead.enabled = true
                 updateParkingMarker(location)
             }
 
@@ -98,6 +101,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             updateMapUI(it)
+        })
+
+        viewModel.mapUri.observe(this, Observer { uri ->
+            leadToParkLocation(uri)
         })
     }
 
@@ -181,6 +188,12 @@ class MainActivity : AppCompatActivity() {
             removeMarker()
             updateParkingMarker(parkLocation)
         }
+    }
+
+    private fun leadToParkLocation(parkLocationUri: Uri){
+        val mapIntent = Intent(Intent.ACTION_VIEW, parkLocationUri)
+        mapIntent.`package` = "com.google.android.apps.maps"
+        startActivity(mapIntent)
     }
 
     private fun removeMarker() {

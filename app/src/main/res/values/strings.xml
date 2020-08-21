@@ -4,4 +4,5 @@
     <string name="park_btn_title">Park Here!</string>
     <string name="remove_btn_title">End Parking</string>
     <string name="application_sharedprefs_key">com.rczubak.ParkHereApp.sharedPrefs</string>
+    <string name="lead_btn_title">Navigate me!</string>
 </resources>
