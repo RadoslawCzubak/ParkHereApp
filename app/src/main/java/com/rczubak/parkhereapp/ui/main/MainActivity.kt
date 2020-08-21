@@ -10,8 +10,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -19,7 +17,6 @@ import com.google.android.gms.maps.model.*
 import com.rczubak.parkhereapp.R
 import com.rczubak.parkhereapp.data.SharedPreferencesDAO
 import com.rczubak.parkhereapp.databinding.ActivityMainBinding
-import com.rczubak.parkhereapp.vmFactory.ViewModelFactory
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
