@@ -95,9 +95,15 @@ class MainViewModel(
 
     fun leadToParkLocation() {
         val coords = parkLocation.value
+
+        /**d for driving (default)
+        b for bicycling
+        l for two-wheeler
+        w for walking*/
+        val navigationMode = "w"
         if (coords != null)
             _mapUri.value =
-                Uri.parse("google.navigation:q=${coords!!.latitude},${coords!!.longitude}")
+                Uri.parse("google.navigation:q=${coords!!.latitude},${coords!!.longitude}&mode=$navigationMode")
     }
 
     private fun locationToLatLng(location: Location?): LatLng? {
