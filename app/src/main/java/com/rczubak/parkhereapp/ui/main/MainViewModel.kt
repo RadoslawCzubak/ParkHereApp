@@ -10,11 +10,15 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.rczubak.parkhereapp.data.SharedPreferencesDAO
+import com.rczubak.parkhereapp.data.SharedPreferencesDAOSource
+import com.rczubak.parkhereapp.data.repository.LocationRepository
+import com.rczubak.parkhereapp.data.repository.LocationSource
 import com.rczubak.parkhereapp.utils.PARK_LOCATION_KEY
+import com.rczubak.parkhereapp.utils.locationToLatLng
 
 class MainViewModel(
-    private val locationProviderClient: FusedLocationProviderClient,
-    private val sharedPreferencesDAO: SharedPreferencesDAO
+    private val locationRepository: LocationSource,
+    private val sharedPreferencesDAO: SharedPreferencesDAOSource
 ) : ViewModel() {
 
     private val _locationPermission = MutableLiveData<Boolean>(false)
@@ -38,10 +42,7 @@ class MainViewModel(
     fun getUserLocation() {
         try {
             if (locationPermission.value!!) {
-                locationProviderClient.lastLocation
-                    .addOnSuccessListener { location ->
-                        _lastUserLocation.value = locationToLatLng(location)
-                    }
+                _lastUserLocation.value = locationRepository.getCurrentUserLocation()
             } else {
                 _lastUserLocation.value = null
                 _locationPermission.value = false
@@ -56,20 +57,20 @@ class MainViewModel(
     private fun getUserLocationAndPark() {
         try {
             if (locationPermission.value!!) {
-                locationProviderClient.lastLocation
-                    .addOnSuccessListener { location ->
+                val newLastLocation = locationRepository.getCurrentUserLocation()
 
-                        _lastUserLocation.value = locationToLatLng(location)
-                        if (_parkLocation.value == null) {
-                            _parkLocation.value = lastUserLocation.value
+                if ( newLastLocation != null){
+                    _lastUserLocation.value = newLastLocation
+                    if (_parkLocation.value == null) {
+                        _parkLocation.value = lastUserLocation.value
 
-                            if (_parkLocation.value != null)
-                                sharedPreferencesDAO.saveLocationData(
-                                    PARK_LOCATION_KEY,
-                                    _parkLocation.value!!
-                                )
-                        }
+                        if (_parkLocation.value != null)
+                            sharedPreferencesDAO.saveLocationData(
+                                PARK_LOCATION_KEY,
+                                _parkLocation.value!!
+                            )
                     }
+                } //TODO: Nested if statements to refactor
             } else {
                 _lastUserLocation.value = null
                 _locationPermission.value = false
@@ -104,14 +105,6 @@ class MainViewModel(
         if (coords != null)
             _mapUri.value =
                 Uri.parse("google.navigation:q=${coords!!.latitude},${coords!!.longitude}&mode=$navigationMode")
-    }
-
-    private fun locationToLatLng(location: Location?): LatLng? {
-        return if (location != null) {
-            LatLng(location.latitude, location.longitude)
-        } else {
-            null
-        }
     }
 
 }
