@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ParkHereApp</string>
+    <string name="title_activity_maps">Mapa</string>
+    <string name="park_btn_title">Zaparkuj tutaj!</string>
+    <string name="remove_btn_title">Zakończ parkowanie</string>
+    <string name="application_sharedprefs_key">com.rczubak.ParkHereApp.sharedPrefs</string>
+    <string name="lead_btn_title">Nawiguj mnie!</string>
+</resources>
