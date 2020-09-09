@@ -15,6 +15,8 @@ import com.rczubak.parkhereapp.data.repository.LocationRepository
 import com.rczubak.parkhereapp.data.repository.LocationSource
 import com.rczubak.parkhereapp.utils.PARK_LOCATION_KEY
 import com.rczubak.parkhereapp.utils.locationToLatLng
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class MainViewModel(
     private val locationRepository: LocationSource,
@@ -42,7 +44,9 @@ class MainViewModel(
     fun getUserLocation() {
         try {
             if (locationPermission.value!!) {
-                _lastUserLocation.value = locationRepository.getCurrentUserLocation()
+                locationRepository.getCurrentUserLocation{
+                    _lastUserLocation.value = it
+                }
             } else {
                 _lastUserLocation.value = null
                 _locationPermission.value = false
@@ -57,20 +61,22 @@ class MainViewModel(
     private fun getUserLocationAndPark() {
         try {
             if (locationPermission.value!!) {
-                val newLastLocation = locationRepository.getCurrentUserLocation()
+                locationRepository.getCurrentUserLocation{ location: LatLng? ->
+                    if ( location != null){
+                        _lastUserLocation.value = location
+                        if (_parkLocation.value == null) {
+                            _parkLocation.value = lastUserLocation.value
 
-                if ( newLastLocation != null){
-                    _lastUserLocation.value = newLastLocation
-                    if (_parkLocation.value == null) {
-                        _parkLocation.value = lastUserLocation.value
+                            if (_parkLocation.value != null)
+                                sharedPreferencesDAO.saveLocationData(
+                                    PARK_LOCATION_KEY,
+                                    _parkLocation.value!!
+                                )
+                        }
+                    } //TODO: Nested if statements to refactor
+                }
 
-                        if (_parkLocation.value != null)
-                            sharedPreferencesDAO.saveLocationData(
-                                PARK_LOCATION_KEY,
-                                _parkLocation.value!!
-                            )
-                    }
-                } //TODO: Nested if statements to refactor
+
             } else {
                 _lastUserLocation.value = null
                 _locationPermission.value = false

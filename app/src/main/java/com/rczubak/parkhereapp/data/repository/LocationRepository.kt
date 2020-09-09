@@ -1,6 +1,7 @@
 package com.rczubak.parkhereapp.data.repository
 
 import android.annotation.SuppressLint
+import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.rczubak.parkhereapp.utils.locationToLatLng
@@ -8,11 +9,10 @@ import com.rczubak.parkhereapp.utils.locationToLatLng
 class LocationRepository(private val locationProviderClient: FusedLocationProviderClient) :
     LocationSource {
     @SuppressLint("MissingPermission")
-    override fun getCurrentUserLocation(): LatLng? {
-        var location: LatLng? = null
+    override fun getCurrentUserLocation(onSuccess: (LatLng?) -> Unit) {
         locationProviderClient.lastLocation.addOnSuccessListener {
-            locationToLatLng(it)
+            val location = locationToLatLng(it)
+            onSuccess(location)
         }
-        return location
     }
 }

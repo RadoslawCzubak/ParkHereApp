@@ -5,7 +5,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.rczubak.parkhereapp.data.repository.FakeLocationRepository
 import com.rczubak.parkhereapp.data.repository.FakeSharedPrefsDAO
 import com.rczubak.parkhereapp.getOrAwaitValue
-import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -46,5 +45,5 @@ class MainViewModelTest{
         assertEquals(value.latitude,15.0, 0.0)
         assertEquals(value.longitude,16.33, 0.0)
     }
-    
+
 }
