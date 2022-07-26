@@ -5,7 +5,8 @@
       <map>
         <entry key="app/src/main/res/layout-sw720dp/activity_main.xml" value="0.1328125" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.17708333333333334" />
-        <entry key="app/src/main/res/layout/fragment_map.xml" value="0.17708333333333334" />
+        <entry key="app/src/main/res/layout/activity_splash.xml" value="0.17708333333333334" />
+        <entry key="app/src/main/res/layout/fragment_map.xml" value="0.2" />
       </map>
     </option>
   </component>
