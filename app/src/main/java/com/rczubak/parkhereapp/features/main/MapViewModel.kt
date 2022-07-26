@@ -1,29 +1,22 @@
-package com.rczubak.parkhereapp.ui.main
+package com.rczubak.parkhereapp.features.main
 
 import android.annotation.SuppressLint
-import android.location.Location
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
-import com.rczubak.parkhereapp.data.SharedPreferencesDAO
 import com.rczubak.parkhereapp.data.SharedPreferencesDAOSource
-import com.rczubak.parkhereapp.data.repository.LocationRepository
 import com.rczubak.parkhereapp.data.repository.LocationSource
 import com.rczubak.parkhereapp.utils.PARK_LOCATION_KEY
-import com.rczubak.parkhereapp.utils.locationToLatLng
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 
-class MainViewModel(
+class MapViewModel(
     private val locationRepository: LocationSource,
     private val sharedPreferencesDAO: SharedPreferencesDAOSource
 ) : ViewModel() {
 
-    private val _locationPermission = MutableLiveData<Boolean>(false)
+    private val _locationPermission = MutableLiveData(false)
     val locationPermission: LiveData<Boolean> = _locationPermission
 
     private val _lastUserLocation = MutableLiveData<LatLng>()
@@ -44,7 +37,7 @@ class MainViewModel(
     fun getUserLocation() {
         try {
             if (locationPermission.value!!) {
-                locationRepository.getCurrentUserLocation{
+                locationRepository.getCurrentUserLocation {
                     _lastUserLocation.value = it
                 }
             } else {
@@ -61,8 +54,8 @@ class MainViewModel(
     private fun getUserLocationAndPark() {
         try {
             if (locationPermission.value!!) {
-                locationRepository.getCurrentUserLocation{ location: LatLng? ->
-                    if ( location != null){
+                locationRepository.getCurrentUserLocation { location: LatLng? ->
+                    if (location != null) {
                         _lastUserLocation.value = location
                         if (_parkLocation.value == null) {
                             _parkLocation.value = lastUserLocation.value
@@ -75,8 +68,6 @@ class MainViewModel(
                         }
                     } //TODO: Nested if statements to refactor
                 }
-
-
             } else {
                 _lastUserLocation.value = null
                 _locationPermission.value = false
@@ -110,7 +101,7 @@ class MainViewModel(
         val navigationMode = "w"
         if (coords != null)
             _mapUri.value =
-                Uri.parse("google.navigation:q=${coords!!.latitude},${coords!!.longitude}&mode=$navigationMode")
+                Uri.parse("google.navigation:q=${coords.latitude},${coords.longitude}&mode=$navigationMode")
     }
 
 }

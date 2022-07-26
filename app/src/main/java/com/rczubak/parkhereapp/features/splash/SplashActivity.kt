@@ -1,10 +1,9 @@
-package com.rczubak.parkhereapp.ui.splash
+package com.rczubak.parkhereapp.features.splash
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.rczubak.parkhereapp.R
-import com.rczubak.parkhereapp.ui.main.MainActivity
+import com.rczubak.parkhereapp.MainActivity
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,14 +1,14 @@
-package com.rczubak.parkhereapp.ui.main
+package com.rczubak.parkhereapp
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -16,17 +16,20 @@ import androidx.lifecycle.Observer
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
-import com.rczubak.parkhereapp.R
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.rczubak.parkhereapp.data.SharedPreferencesDAO
 import com.rczubak.parkhereapp.databinding.ActivityMainBinding
+import com.rczubak.parkhereapp.features.main.MapViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MainViewModel by viewModel()
+    private val viewModel: MapViewModel by viewModel()
     private lateinit var sharedPreferencesDAO: SharedPreferencesDAO
     private var map: GoogleMap? = null
     private var marker: Marker? = null
@@ -132,9 +135,9 @@ class MainActivity : AppCompatActivity() {
         Log.i(TAG, "Getting Google maps.")
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        mapFragment.getMapAsync{
+        mapFragment.getMapAsync {
             Log.i(TAG, "Maps get.")
-            map=it
+            map = it
             setupViewModel()
             setObservers()
             getLocationPermission()
@@ -190,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun leadToParkLocation(parkLocationUri: Uri){
+    private fun leadToParkLocation(parkLocationUri: Uri) {
         val mapIntent = Intent(Intent.ACTION_VIEW, parkLocationUri)
         mapIntent.`package` = "com.google.android.apps.maps"
         startActivity(mapIntent)

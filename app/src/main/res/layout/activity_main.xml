@@ -7,14 +7,14 @@
 
         <variable
             name="viewModel"
-            type="com.rczubak.parkhereapp.ui.main.MainViewModel" />
+            type="com.rczubak.parkhereapp.features.main.MapViewModel" />
     </data>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context=".ui.main.MainActivity">
+        tools:context=".MainActivity">
 
         <fragment
             android:id="@+id/map_fragment"
