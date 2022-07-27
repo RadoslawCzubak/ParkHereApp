@@ -7,13 +7,13 @@
 
         <variable
             name="viewModel"
-            type="com.rczubak.parkhereapp.features.main.MapViewModel" />
+            type="com.rczubak.parkhereapp.features.map.MapViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".features.main.MapFragment">
+        tools:context=".features.map.MapFragment">
 
         <fragment
             android:id="@+id/map_fragment"

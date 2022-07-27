@@ -1,4 +1,4 @@
-package com.rczubak.parkhereapp.features.main
+package com.rczubak.parkhereapp.features.map
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,6 +22,8 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.rczubak.parkhereapp.R
 import com.rczubak.parkhereapp.databinding.FragmentMapBinding
+import com.rczubak.parkhereapp.domain.model.Coordinates
+import com.rczubak.parkhereapp.utils.latLngToCoordinates
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
@@ -46,7 +47,7 @@ class MapFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_map, container, false)
+        binding = FragmentMapBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -66,11 +67,12 @@ class MapFragment : Fragment() {
                 removeMarker()
                 binding.buttonPark.enabled = true
                 binding.buttonRemove.enabled = false
+                binding.buttonLead.enabled = false
             } else {
                 binding.buttonPark.enabled = false
                 binding.buttonRemove.enabled = true
                 binding.buttonLead.enabled = true
-                updateParkingMarker(location)
+                updateParkingMarker(location.coordinates)
             }
 
         }
@@ -80,8 +82,8 @@ class MapFragment : Fragment() {
             updateMapUI(true)
         }
 
-        viewModel.mapUri.observe(viewLifecycleOwner) { uri ->
-            leadToParkLocation(uri)
+        viewModel.coordinatesToNavigate.observe(viewLifecycleOwner) { coords ->
+            leadToParkLocation(coords)
         }
     }
 
@@ -149,19 +151,19 @@ class MapFragment : Fragment() {
         viewModel.getUserLocation()
     }
 
-    private fun updateMapView(lastUserLocation: LatLng?, zoom: Float = 13f) {
+    private fun updateMapView(lastUserLocation: Coordinates?, zoom: Float = 13f) {
         if (lastUserLocation != null) {
             map?.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    lastUserLocation, zoom
+                    latLngToCoordinates(lastUserLocation), zoom
                 )
             )
         }
     }
 
-    private fun updateParkingMarker(parkLocation: LatLng?) {
+    private fun updateParkingMarker(parkLocation: Coordinates?) {
         if (marker == null && parkLocation != null) {
-            addMarker(parkLocation)
+            addMarker(latLngToCoordinates(parkLocation))
         } else if (marker != null && parkLocation != null) {
             removeMarker()
             updateParkingMarker(parkLocation)
@@ -183,7 +185,15 @@ class MapFragment : Fragment() {
         marker = null
     }
 
-    private fun leadToParkLocation(parkLocationUri: Uri) {
+    private fun leadToParkLocation(parkingSpotCoords: Coordinates) {
+        /**d for driving (default)
+        b for bicycling
+        l for two-wheeler
+        w for walking*/
+        val navigationMode = "w"
+        val parkLocationUri =
+            Uri.parse("google.navigation:q=${parkingSpotCoords.lat},${parkingSpotCoords.lng}&mode=$navigationMode")
+
         val mapIntent = Intent(Intent.ACTION_VIEW, parkLocationUri)
         mapIntent.`package` = "com.google.android.apps.maps"
         startActivity(mapIntent)

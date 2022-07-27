@@ -1,8 +1,8 @@
 package com.rczubak.parkhereapp.di
 
 import com.google.android.gms.location.LocationServices
-import com.rczubak.parkhereapp.data.repository.LocationRepository
-import com.rczubak.parkhereapp.data.repository.LocationSource
+import com.rczubak.parkhereapp.data.repository.LocationRepositoryImpl
+import com.rczubak.parkhereapp.domain.LocationRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -11,7 +11,7 @@ val locationModule = module {
         LocationServices.getFusedLocationProviderClient(androidContext())
     }
 
-    single<LocationSource> {
-        LocationRepository(get())
+    single<LocationRepository> {
+        LocationRepositoryImpl(get())
     }
 }

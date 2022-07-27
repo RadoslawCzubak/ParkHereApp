@@ -14,9 +14,14 @@ class ParkingRepositoryImpl(
         parkingDao.addNewParkingSpot(ParkingSpotRoomDb(parkingSpot))
     }
 
+    override suspend fun getLastActiveParkingSpot(): ParkingSpot? {
+        return parkingDao
+            .getLastActiveParkingSpot()?.toParkingSpot()
+    }
+
     override suspend fun getParkingSpots(): List<ParkingSpot> {
         return parkingDao
-            .getAllParkingSpots()
+            .getAllParkingSpotsByIsParked(true)
             .map {
                 it.toParkingSpot()
             }

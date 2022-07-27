@@ -1,7 +1,7 @@
-package com.rczubak.parkhereapp.data.repository
+package com.rczubak.parkhereapp.domain
 
 import com.google.android.gms.maps.model.LatLng
 
-interface LocationSource {
+interface LocationRepository {
     fun getCurrentUserLocation(onSuccess: (LatLng?) -> Unit)
 }
