@@ -1,4 +1,4 @@
-package com.rczubak.parkhereapp.data
+package com.rczubak.parkhereapp.data.database.sharedPrefs
 
 import android.content.Context
 import com.google.android.gms.maps.model.LatLng

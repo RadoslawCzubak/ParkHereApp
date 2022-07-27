@@ -10,7 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -21,11 +21,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.rczubak.parkhereapp.MainActivity
 import com.rczubak.parkhereapp.R
-import com.rczubak.parkhereapp.data.SharedPreferencesDAO
 import com.rczubak.parkhereapp.databinding.FragmentMapBinding
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
@@ -33,12 +30,16 @@ class MapFragment : Fragment() {
 
     private lateinit var binding: FragmentMapBinding
     private val viewModel: MapViewModel by viewModel()
-    private val sharedPreferencesDAO: SharedPreferencesDAO by inject()
     private var map: GoogleMap? = null
     private var marker: Marker? = null
 
-    companion object {
-        const val FINE_LOCATION_PERMISSION_REQUEST = 101
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            setMapUI()
+        }
+        updateMapUI(isGranted)
     }
 
     override fun onCreateView(
@@ -52,35 +53,7 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupViewModel()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            FINE_LOCATION_PERMISSION_REQUEST -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Timber.i("Location permission granted.")
-                    viewModel.locationPermissionGranted()
-                    Toast.makeText(context, "Permission granted!", Toast.LENGTH_SHORT)
-                        .show()
-                } else {
-                    Timber.i("Location permission denied.")
-                    Toast.makeText(
-                        context,
-                        "Permission denied, we need them to localize your park place!",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                return
-            }
-            else -> {
-                return
-            } //Do nothing
-        }
+        getMap()
     }
 
     private fun setupViewModel() {
@@ -88,7 +61,7 @@ class MapFragment : Fragment() {
     }
 
     private fun setObservers() {
-        viewModel.parkLocation.observe(this) { location ->
+        viewModel.parkLocation.observe(viewLifecycleOwner) { location ->
             if (location == null) {
                 removeMarker()
                 binding.buttonPark.enabled = true
@@ -102,41 +75,41 @@ class MapFragment : Fragment() {
 
         }
 
-        viewModel.lastUserLocation.observe(this) { location ->
+        viewModel.lastUserLocation.observe(viewLifecycleOwner) { location ->
             updateMapView(location)
             updateMapUI(true)
         }
 
-        viewModel.locationPermission.observe(this) {
-            if (it) {
-                setMapUI()
-            }
-
-            updateMapUI(it)
-        }
-
-        viewModel.mapUri.observe(this) { uri ->
+        viewModel.mapUri.observe(viewLifecycleOwner) { uri ->
             leadToParkLocation(uri)
         }
     }
 
     private fun getLocationPermission() {
         Timber.i("Checking location permission.")
-        if (ContextCompat.checkSelfPermission(
-                context!!,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            Timber.i("Location permission already granted.")
-            viewModel.locationPermissionGranted()
-            getUserLocation()
-        } else {
-            Timber.i("Trying to get location permission.")
-//            ContextCompat.requestPermissions(
-//                this,
-//                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-//                MainActivity.FINE_LOCATION_PERMISSION_REQUEST
-//            )
+        context?.let {
+            when {
+                ContextCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    setMapUI()
+                    updateMapUI(true)
+                    getUserLocation()
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                    Toast.makeText(
+                        context,
+                        "Location permission is needed to save your park spot!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                else -> {
+                    requestPermissionLauncher.launch(
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    )
+                }
+            }
         }
     }
 
@@ -160,7 +133,6 @@ class MapFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun updateMapUI(isLocationAllowed: Boolean) {
-
         if (map == null) return
 
         if (isLocationAllowed) {
@@ -177,11 +149,11 @@ class MapFragment : Fragment() {
         viewModel.getUserLocation()
     }
 
-    private fun updateMapView(lastUserLocation: LatLng?) {
+    private fun updateMapView(lastUserLocation: LatLng?, zoom: Float = 13f) {
         if (lastUserLocation != null) {
             map?.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    lastUserLocation, 13f
+                    lastUserLocation, zoom
                 )
             )
         }
@@ -189,27 +161,31 @@ class MapFragment : Fragment() {
 
     private fun updateParkingMarker(parkLocation: LatLng?) {
         if (marker == null && parkLocation != null) {
-            val marker = map?.addMarker(
-                MarkerOptions().position(
-                    parkLocation
-                ).title("Parked Here!")
-                    .icon(BitmapDescriptorFactory.defaultMarker(215f))
-            )
-            this.marker = marker
+            addMarker(parkLocation)
         } else if (marker != null && parkLocation != null) {
             removeMarker()
             updateParkingMarker(parkLocation)
         }
     }
 
-    private fun leadToParkLocation(parkLocationUri: Uri) {
-        val mapIntent = Intent(Intent.ACTION_VIEW, parkLocationUri)
-        mapIntent.`package` = "com.google.android.apps.maps"
-        startActivity(mapIntent)
+    private fun addMarker(location: LatLng) {
+        val marker = map?.addMarker(
+            MarkerOptions().position(
+                location
+            ).title("Parked Here!")
+                .icon(BitmapDescriptorFactory.defaultMarker(215f))
+        )
+        this.marker = marker
     }
 
     private fun removeMarker() {
         if (marker != null) marker!!.remove()
         marker = null
+    }
+
+    private fun leadToParkLocation(parkLocationUri: Uri) {
+        val mapIntent = Intent(Intent.ACTION_VIEW, parkLocationUri)
+        mapIntent.`package` = "com.google.android.apps.maps"
+        startActivity(mapIntent)
     }
 }

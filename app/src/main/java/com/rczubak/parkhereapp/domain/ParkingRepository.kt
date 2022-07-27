@@ -1,7 +1,12 @@
 package com.rczubak.parkhereapp.domain
 
+import com.rczubak.parkhereapp.domain.model.Car
+import com.rczubak.parkhereapp.domain.model.ParkingSpot
+
 interface ParkingRepository {
-    fun startParking()
-    fun endParking()
-    fun addCar()
+    suspend fun startParking(parkingSpot: ParkingSpot)
+    suspend fun getParkingSpots(): List<ParkingSpot>
+    suspend fun endParking(parkingSpot: ParkingSpot)
+    suspend fun addCar(newCar: Car)
+    suspend fun getCars(): List<Car>
 }

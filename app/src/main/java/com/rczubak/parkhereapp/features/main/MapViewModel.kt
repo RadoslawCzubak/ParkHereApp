@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
-import com.rczubak.parkhereapp.data.SharedPreferencesDAOSource
+import com.rczubak.parkhereapp.data.database.sharedPrefs.SharedPreferencesDAOSource
 import com.rczubak.parkhereapp.data.repository.LocationSource
 import com.rczubak.parkhereapp.utils.PARK_LOCATION_KEY
 
@@ -15,9 +15,6 @@ class MapViewModel(
     private val locationRepository: LocationSource,
     private val sharedPreferencesDAO: SharedPreferencesDAOSource
 ) : ViewModel() {
-
-    private val _locationPermission = MutableLiveData(false)
-    val locationPermission: LiveData<Boolean> = _locationPermission
 
     private val _lastUserLocation = MutableLiveData<LatLng>()
     val lastUserLocation: LiveData<LatLng> = _lastUserLocation
@@ -36,14 +33,8 @@ class MapViewModel(
     @SuppressLint("MissingPermission")
     fun getUserLocation() {
         try {
-            if (locationPermission.value!!) {
-                locationRepository.getCurrentUserLocation {
-                    _lastUserLocation.value = it
-                }
-            } else {
-                _lastUserLocation.value = null
-                _locationPermission.value = false
-
+            locationRepository.getCurrentUserLocation {
+                _lastUserLocation.value = it
             }
         } catch (e: SecurityException) {
             Log.e("", "Location error occured", e)
@@ -53,7 +44,6 @@ class MapViewModel(
 
     private fun getUserLocationAndPark() {
         try {
-            if (locationPermission.value!!) {
                 locationRepository.getCurrentUserLocation { location: LatLng? ->
                     if (location != null) {
                         _lastUserLocation.value = location
@@ -68,11 +58,6 @@ class MapViewModel(
                         }
                     } //TODO: Nested if statements to refactor
                 }
-            } else {
-                _lastUserLocation.value = null
-                _locationPermission.value = false
-
-            }
         } catch (e: SecurityException) {
             Log.e("", "Location error occured", e)
         }
@@ -85,10 +70,6 @@ class MapViewModel(
     fun endParking() {
         _parkLocation.value = null
         sharedPreferencesDAO.deleteLocationData(PARK_LOCATION_KEY)
-    }
-
-    fun locationPermissionGranted() {
-        _locationPermission.value = true
     }
 
     fun leadToParkLocation() {
